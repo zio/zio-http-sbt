@@ -82,8 +82,10 @@ object ZioHttpCodegen extends AutoPlugin {
     val baseDir                    = baseDirectory.value
     val targetDir: File            = (Compile / sourceManaged).value
     val config: Config             = (ZIOpenApi / zioHttpCodegenConf).value
+    val s                          = streams.value
 
     openApiFiles.flatMap { openApiFile =>
+      s.log.debug(s"Generating code from OpenAPI file ${openApiFile.getAbsolutePath}")
       val content        = fileContentAsString(openApiFile)
       val format         = Format.fromFileName(openApiFile.getName)
       val openApiRootDir = openApiRootDirs.foldLeft(baseDir) { case (bestSoFar, currentDir) =>
@@ -93,6 +95,7 @@ object ZioHttpCodegen extends AutoPlugin {
         if (isAncestor && isMoreSpecific) currentDir
         else bestSoFar
       }
+      s.log.debug(s"OpenAPI root directory is ${openApiRootDir.getAbsolutePath}")
       val parsedOrError  = format match {
         case Format.YAML => content.fromYaml[OpenAPI](JsonCodec.jsonDecoder(OpenAPI.schema))
         case Format.JSON => OpenAPI.fromJson(content)
@@ -104,12 +107,14 @@ object ZioHttpCodegen extends AutoPlugin {
           val codegenEndpoints = EndpointGen.fromOpenAPI(openapi, config)
           val basePackageParts = dirDiffToPackage(openApiRootDir, openApiFile)
           val currentTargetDir = basePackageParts.foldLeft(targetDir)(_ / _)
+          s.log.debug(s"OpenAPI target directory is ${currentTargetDir.getAbsolutePath}")
           val currentTargetPat = Path.of(currentTargetDir.toURI())
 
           CodeGen
             .renderedFiles(codegenEndpoints, basePackageParts.mkString("."))
             .map { case (path, content) =>
               val filePath = currentTargetPat.resolve(path)
+              s.log.debug(s"OpenAPI: creating file ${filePath.toString} ($path)")
               Files.createDirectories(filePath.getParent)
               Files.write(filePath, content.getBytes(StandardCharsets.UTF_8), CREATE, TRUNCATE_EXISTING)
               filePath.toFile
