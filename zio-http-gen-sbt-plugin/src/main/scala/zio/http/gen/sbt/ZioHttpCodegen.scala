@@ -113,7 +113,7 @@ object ZioHttpCodegen extends AutoPlugin {
           CodeGen
             .renderedFiles(codegenEndpoints, basePackageParts.mkString("."))
             .map { case (path, content) =>
-              val filePath = currentTargetPat.resolve(path)
+              val filePath = currentTargetPat.resolve(path.stripPrefix("/"))
               s.log.debug(s"OpenAPI: creating file ${filePath.toString} ($path)")
               Files.createDirectories(filePath.getParent)
               Files.write(filePath, content.getBytes(StandardCharsets.UTF_8), CREATE, TRUNCATE_EXISTING)
