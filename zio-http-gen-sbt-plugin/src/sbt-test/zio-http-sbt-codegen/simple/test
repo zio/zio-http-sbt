@@ -4,3 +4,5 @@
 > compile
 $ exists target/scala-2.13/classes/dev/zoo/service/api/v1/zoo/Animal.class
 $ exists target/scala-2.13/classes/dev/zoo/service/component/Animal.class
+$ exists target/scala-2.13/classes/dev/school/service/Teachers.class
+$ exists target/scala-2.13/classes/dev/school/service/component/Teacher.class
