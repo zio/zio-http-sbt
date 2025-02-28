@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  title: School Service
+  version: 0.0.1
+servers:
+  - url: https://school.example.org/api/v1/school
+paths:
+  # test that code generation works well for single-segment paths
+  /teachers:
+    get:
+      summary: Get a list of all teachers
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Teacher'
+components:
+  schemas:
+    Teacher:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Full name
+        room:
+          type: string
+          description: Room number
